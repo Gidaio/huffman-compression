@@ -1,4 +1,4 @@
-import { Branch, Leaf, Tree, isBranch } from "./huffman-types"
+import { Branch, Leaf, Tree, isBranch } from "./types"
 
 
 export function buildMap<T>(input: T[]): Tree<T> {

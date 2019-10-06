@@ -1,4 +1,4 @@
-import { Branch, isBranch } from "./huffman-types"
+import { Branch, isBranch } from "./types"
 import { readFileSync, writeFileSync } from "fs"
 import { buildMap } from "./build-map"
 import { serializeMap } from "./serialize-map"

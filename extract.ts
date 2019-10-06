@@ -1,4 +1,4 @@
-import { isBranch } from "./huffman-types"
+import { isBranch } from "./types"
 import { readFileSync } from "fs"
 import { BitBuffer } from "./bit-buffer"
 import { deserializeMap } from "./deserialize-map"

@@ -1,5 +1,5 @@
 import { BitBuffer } from "./bit-buffer"
-import { Tree, Branch } from "./huffman-types"
+import { Tree, Branch } from "./types"
 
 
 export function deserializeMap(bitBuffer: BitBuffer): Tree<string> {
