@@ -3,37 +3,35 @@ import { readFileSync, writeFileSync } from "fs"
 import { buildMap } from "./build-map"
 import { serializeMap } from "./serialize-map"
 import { BitBuffer } from "./bit-buffer"
-// import * as path from "path"
 
-const filename = "lorem-ipsum.txt" //process.argv[2]
+const filename = process.argv[2]
 
 const fileContents = readFileSync(`${filename}`, "utf8")
 const fileCharacters = fileContents.split("")
 const huffmanTree = buildMap(fileCharacters)
-
-const mapBitsNeeded = huffmanTree.branches + huffmanTree.leaves * 9
-const mapBuffer = Buffer.alloc(Math.ceil(mapBitsNeeded / 8))
-serializeMap(new BitBuffer(mapBuffer), huffmanTree)
-writeFileSync(`${filename}.map`, mapBuffer)
-
 const conversionTable: { [character: string]: { data: number, bitCount: number } } = {}
 buildConversionTable(huffmanTree.root)
 
+const mapBitsNeeded = huffmanTree.branches + huffmanTree.leaves * 9
 const contentBitsNeeded = fileCharacters.reduce((total, char) => total + conversionTable[char].bitCount, 0)
+const totalBitsNeeded = mapBitsNeeded + contentBitsNeeded + 16 // Add 16 for length.
 
-const contentBuffer = Buffer.alloc(Math.ceil(contentBitsNeeded / 8) + 2)
-const bitBuffer = new BitBuffer(contentBuffer)
+const outBuffer = Buffer.alloc(Math.ceil(totalBitsNeeded / 8))
+const outBitBuffer = new BitBuffer(outBuffer)
+serializeMap(outBitBuffer, huffmanTree)
+
 const lengthMSB = (fileContents.length & 255 << 8) >> 8
 const lengthLSB = fileContents.length & 255
-bitBuffer.writeBits(lengthMSB, 8)
-bitBuffer.writeBits(lengthLSB, 8)
+outBitBuffer.writeBits(lengthMSB, 8)
+outBitBuffer.writeBits(lengthLSB, 8)
 
 for (const character of fileCharacters) {
   const tableEntry = conversionTable[character]
-  bitBuffer.writeBits(tableEntry.data, tableEntry.bitCount)
+  outBitBuffer.writeBits(tableEntry.data, tableEntry.bitCount)
 }
 
-writeFileSync(`${filename}.cmprsd`, contentBuffer)
+outBitBuffer.flush()
+writeFileSync(`${filename}.hc`, outBuffer)
 
 
 function buildConversionTable(currentBranch: Branch<string>, currentData = 0, currentBitCount = 0) {

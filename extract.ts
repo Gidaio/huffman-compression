@@ -1,16 +1,16 @@
 import { isBranch } from "./types"
-import { readFileSync } from "fs"
+import { readFileSync, writeFileSync } from "fs"
 import { BitBuffer } from "./bit-buffer"
 import { deserializeMap } from "./deserialize-map"
 
-const filename = "lorem-ipsum.txt" // process.argv[2]
-const treeBuffer = readFileSync(`${filename}.map`)
-const huffmanTree = deserializeMap(new BitBuffer(treeBuffer)).root
-const binary = readFileSync(`${filename}.cmprsd`)
-const bitBuffer = new BitBuffer(binary)
+const filename = process.argv[2]
 
-const lengthMSB = bitBuffer.readBits(8)
-const lengthLSB = bitBuffer.readBits(8)
+const inBuffer = readFileSync(`${filename}`)
+const inBitBuffer = new BitBuffer(inBuffer)
+const huffmanTree = deserializeMap(inBitBuffer).root
+
+const lengthMSB = inBitBuffer.readBits(8)
+const lengthLSB = inBitBuffer.readBits(8)
 const length = (lengthMSB << 8) | lengthLSB
 
 let charactersProcessed = 0
@@ -19,7 +19,7 @@ let currentBranch = huffmanTree
 let out = ""
 
 while (charactersProcessed < length) {
-  const bit = bitBuffer.readBit()
+  const bit = inBitBuffer.readBit()
 
   switch (bit) {
     case 0:
@@ -46,4 +46,4 @@ while (charactersProcessed < length) {
   }
 }
 
-console.log(out)
+writeFileSync(`${filename.replace(".hc", "")}`, out)

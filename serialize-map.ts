@@ -10,7 +10,6 @@ export function serializeMap(bitBuffer: BitBuffer, map: Tree<string>) {
   }
 
   serialize(map.root)
-  bitBuffer.flush()
 
   function serialize(currentBranch: Branch<string>) {
     if (isBranch(currentBranch.left)) {
